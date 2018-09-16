@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм» [![Build status][travis-image]][travis-url]
 
 * Студент: [Віталій Бондаренко](https://up.htmlacademy.ru/javascript/15/user/178495).
-* Наставник: `Неизвестно`.
+* Наставник: `without mentor`.
 
 ---
 
