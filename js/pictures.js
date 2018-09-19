@@ -314,3 +314,49 @@ var pictureClickHandler = function (evt) {
 
 // Открывает большую картинку по клику на миниатюру, вешает обработчик закрытия
 picturesList.addEventListener('click', pictureClickHandler);
+
+
+var validateFormHandler = function () {
+  var hashtagArray = textHashtags.value.split(' ');
+  var duplicatesCounter = 0;
+  textHashtags.setCustomValidity('');
+  for (var i = 0; i < hashtagArray.length; i++) {
+    // Если в элементе массива '#' встречается больше 1 раза - кидаем CustomValidity
+    if (hashtagArray[i].split('#').length - 1 > 1) {
+      textHashtags.setCustomValidity('Хеш-теги должны разделяться пробелами');
+    }
+    // Если елемент заканчивается на '#', точку или запятую  - убираем
+    while (hashtagArray[i].slice(-1) === '#' || hashtagArray[i].slice(-1) === ',' || hashtagArray[i].slice(-1) === '.' || hashtagArray[i].slice(-1) === '/') {
+      hashtagArray[i] = hashtagArray[i].slice(0, -1);
+    }
+    // Если елемент не начинается с '#'  - ставим '#'
+    if (hashtagArray[i].slice(0, 1) !== '#') {
+      hashtagArray[i] = '#' + hashtagArray[i];
+    }
+
+    if (hashtagArray[i].length > 20) {
+      textHashtags.setCustomValidity('Длина хеш-тега не может превышать 20 символов');
+    }
+
+    // Переводим все элементы в верхний регистр и сравниваем исходный массив с самим собой. Если совпадений больше, чем длинна массива - кидаем CustomValidity
+    for (var j = 0; j < hashtagArray.length; j++) {
+      if (hashtagArray[i].toUpperCase() === hashtagArray[j].toUpperCase()) {
+        duplicatesCounter++;
+      }
+      if (duplicatesCounter > hashtagArray.length) {
+        textHashtags.setCustomValidity('Хеш-теги не должны повторяться');
+      }
+    }
+    // Чистим массив елементов от мусора и лишних пробелов
+    while (hashtagArray[i] === '' || hashtagArray[i] === '#' || hashtagArray[i] === ' ') {
+      hashtagArray.splice(i, 1);
+    }
+  }
+  if (hashtagArray.length > 5) {
+    textHashtags.setCustomValidity('Хеш-тегов не может быть более 5');
+  }
+
+  textHashtags.value = hashtagArray.join(' ');
+};
+
+textHashtags.addEventListener('blur', validateFormHandler);
