@@ -60,9 +60,9 @@ var generatePhotoCardsDataArray = function (dataObj) {
 var allPhotosArr = generatePhotoCardsDataArray(photoData);
 
 // Подставляет данные из массива объектов в фрагменты и встраивает их на страницу
+var picturesList = document.querySelector('.pictures');
 var renderPhotoCards = function (arr) {
   var photoTemplateNode = document.querySelector('#picture').content.querySelector('.picture');
-  var picturesListNode = document.querySelector('.pictures');
 
   var fragment = document.createDocumentFragment();
   for (var i = 0; i < arr.length; i++) {
@@ -72,16 +72,16 @@ var renderPhotoCards = function (arr) {
     photoElement.querySelector('.picture__likes').textContent = arr[i].likes;
     fragment.appendChild(photoElement);
   }
-  picturesListNode.appendChild(fragment);
+  picturesList.appendChild(fragment);
 };
 
+var bigPicture = document.querySelector('.big-picture');
 var showBigPictureWithData = function (arrElem) {
-  var bigPictureNode = document.querySelector('.big-picture');
-  bigPictureNode.classList.remove('hidden');
+  bigPicture.classList.remove('hidden');
 
-  bigPictureNode.querySelector('.big-picture__img img').src = arrElem.url;
-  bigPictureNode.querySelector('.likes-count').textContent = arrElem.likes;
-  bigPictureNode.querySelector('.comments-count').textContent = arrElem.comments.length;
+  bigPicture.querySelector('.big-picture__img img').src = arrElem.url;
+  bigPicture.querySelector('.likes-count').textContent = arrElem.likes;
+  bigPicture.querySelector('.comments-count').textContent = arrElem.comments.length;
 
   var fragment = document.createDocumentFragment();
   for (var i = 0; i < arrElem.comments.length; i++) {
@@ -106,4 +106,211 @@ var showBigPictureWithData = function (arrElem) {
 };
 
 renderPhotoCards(allPhotosArr);
-showBigPictureWithData(allPhotosArr[0]);
+// showBigPictureWithData(allPhotosArr[0]);
+
+var keyCode = {
+  ESC: 27,
+  ENTER: 13
+};
+
+var uploadFile = document.querySelector('#upload-file');
+var uploadOverlay = document.querySelector('.img-upload__overlay');
+var uploadOverlayClose = document.querySelector('#upload-cancel');
+var textHashtags = document.querySelector('.text__hashtags');
+var textDescription = document.querySelector('.text__description');
+
+var overlayEscPressHandler = function (evt) {
+  if (evt.keyCode === keyCode.ESC && document.activeElement !== textHashtags && document.activeElement !== textDescription) {
+    overlayCloseHandler();
+    bigPicture.classList.add('hidden');
+  }
+};
+var overlayOpenHandler = function () {
+  uploadOverlay.classList.remove('hidden');
+  effectLevel.classList.add('hidden');
+  document.addEventListener('keydown', overlayEscPressHandler);
+};
+
+var overlayCloseHandler = function () {
+  // При закрытии модального окна возвращает все поля формы и значения фильтра в исходное положение
+  uploadOverlay.classList.add('hidden');
+
+  // Обнуляет все изменения при закрытии модального окна
+  uploadFile.value = '';
+  uploadPreview.removeAttribute('style');
+  uploadPreview.removeAttribute('class');
+  levelValue.removeAttribute('value');
+  uploadPreview.querySelector('img').removeAttribute('style');
+  sizeValue.value = 100 + '%';
+  effectNone.selected = true;
+  document.removeEventListener('keydown', overlayEscPressHandler);
+};
+
+uploadFile.addEventListener('change', overlayOpenHandler);
+
+uploadOverlayClose.addEventListener('click', overlayCloseHandler);
+uploadOverlayClose.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === keyCode.ENTER) {
+    overlayCloseHandler();
+  }
+});
+
+var effectsList = document.querySelector('.effects__list');
+var uploadPreview = document.querySelector('.img-upload__preview');
+// Список переменных шкалы фильтра
+var effectLevel = document.querySelector('.img-upload__effect-level');
+var levelLine = effectLevel.querySelector('.effect-level__line');
+var levelPin = levelLine.querySelector('.effect-level__pin');
+var levelDepth = levelLine.querySelector('.effect-level__depth');
+var levelValue = document.querySelector('.effect-level__value');
+// Список переменных ноды изменения размеров
+var uploadSizeScale = document.querySelector('.img-upload__scale');
+var resizeSmaller = uploadSizeScale.querySelector('.scale__control--smaller');
+var resizeBigger = uploadSizeScale.querySelector('.scale__control--bigger');
+var sizeValue = uploadSizeScale.querySelector('.scale__control--value');
+
+var bigPictureClose = document.querySelector('.big-picture__cancel');
+
+document.querySelector('.img-upload__scale').style = 'z-index: 100';
+
+
+// Список элементов-фильтров по ID
+var effectChrome = effectsList.querySelector('#effect-chrome');
+var effectSepia = effectsList.querySelector('#effect-sepia');
+var effectMarvin = effectsList.querySelector('#effect-marvin');
+var effectPhobos = effectsList.querySelector('#effect-phobos');
+var effectHeat = effectsList.querySelector('#effect-heat');
+var effectNone = effectsList.querySelector('#effect-none');
+
+var effectsClassNameMap = {
+  chrome: 'effects__preview--chrome',
+  sepia: 'effects__preview--sepia',
+  marvin: 'effects__preview--marvin',
+  phobos: 'effects__preview--phobos',
+  heat: 'effects__preview--heat'
+};
+
+// Получает соотношение шкалы уровня к общей длине шкалы и подставляет это значение в подходящем формате в атрибут style
+var refreshEffectDepth = function () {
+  var getEffectDepth = function () {
+    return (levelDepth.offsetWidth / levelLine.offsetWidth).toFixed(2);
+  };
+  var depth = getEffectDepth();
+  if (effectChrome.checked) {
+    uploadPreview.style = 'filter: grayscale(' + depth + ');';
+    levelValue.setAttribute('value', depth);
+  }
+  if (effectSepia.checked) {
+    uploadPreview.style = 'filter: sepia(' + depth + ');';
+    levelValue.setAttribute('value', depth);
+  }
+  if (effectMarvin.checked) {
+    uploadPreview.style = 'filter: invert(' + depth * 100 + '%);';
+    levelValue.setAttribute('value', depth * 100 + '%');
+  }
+  if (effectPhobos.checked) {
+    uploadPreview.style = 'filter: blur(' + depth * 3 + 'px);';
+    levelValue.setAttribute('value', (depth * 3).toFixed(2) + 'px');
+  }
+  if (effectHeat.checked) {
+    uploadPreview.style = 'filter: brightness(' + depth * 3 + ');';
+    levelValue.setAttribute('value', (depth * 3).toFixed(2));
+  }
+};
+
+var filterChangeHandler = function (scaleIsHidden, filterClassNameAdd) {
+  uploadPreview.removeAttribute('class');
+  // Если шкала спрятана ( === выбран вариант без фильтра) - обнуляет фильтры превью и значение фильтра в форме
+  if (scaleIsHidden) {
+    effectLevel.classList.add('hidden');
+    uploadPreview.removeAttribute('style');
+    levelValue.removeAttribute('value');
+  } else {
+    effectLevel.classList.remove('hidden');
+  }
+  if (filterClassNameAdd) {
+    uploadPreview.className = filterClassNameAdd;
+  }
+  refreshEffectDepth();
+};
+
+effectsList.addEventListener('click', function (evt) {
+  switch (evt.target) {
+    case effectChrome :
+      filterChangeHandler(false, effectsClassNameMap.chrome);
+      break;
+    case effectSepia :
+      filterChangeHandler(false, effectsClassNameMap.sepia);
+      break;
+    case effectMarvin :
+      filterChangeHandler(false, effectsClassNameMap.marvin);
+      break;
+    case effectPhobos :
+      filterChangeHandler(false, effectsClassNameMap.phobos);
+      break;
+    case effectHeat :
+      filterChangeHandler(false, effectsClassNameMap.heat);
+      break;
+    default:
+      filterChangeHandler(true);
+      break;
+  }
+});
+
+// Вешает обработчик отпускания клика на пин фильтра
+levelPin.addEventListener('mouseup', refreshEffectDepth);
+
+// Меняет размер изображения, записывает данные в инпут
+var changeImgSize = function (scaleDown, scaleUp) {
+  var img = uploadPreview.querySelector('img');
+  var inputValue = parseInt(sizeValue.value, 10);
+  var maxValue = 100;
+  var minValue = 25;
+  var step = 25;
+  if (scaleDown) {
+    if (inputValue > minValue) {
+      img.style.transform = 'scale(0.' + (inputValue - step) + ')';
+      sizeValue.value = inputValue - step + '%';
+    }
+  }
+  if (scaleUp) {
+    if (inputValue < maxValue) {
+      img.style.transform = 'scale(0.' + (inputValue + step) + ')';
+      sizeValue.value = inputValue + step + '%';
+      if (parseInt(sizeValue.value, 10) === maxValue) {
+        img.removeAttribute('style');
+        sizeValue.value = maxValue + '%';
+      }
+    }
+  }
+};
+
+uploadSizeScale.addEventListener('click', function (evt) {
+  switch (evt.target) {
+    case resizeSmaller:
+      changeImgSize(true);
+      break;
+    case resizeBigger:
+      changeImgSize(false, true);
+      break;
+  }
+});
+
+
+var pictureClickHandler = function (evt) {
+  if (evt.target.parentElement.className === 'picture') {
+    var target = evt.target;
+    for (var i = 0; i < allPhotosArr.length; i++) {
+      if (target.getAttribute('src') === allPhotosArr[i].url) {
+        showBigPictureWithData(allPhotosArr[i]);
+      }
+    }
+    document.addEventListener('keydown', overlayEscPressHandler);
+    bigPictureClose.addEventListener('click', function () {
+      bigPicture.classList.add('hidden');
+    });
+  }
+};
+
+// Открывает большую картинку по клику на миниатюру, вешает обработчик закрытия
+picturesList.addEventListener('click', pictureClickHandler);
