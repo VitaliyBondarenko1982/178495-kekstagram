@@ -125,6 +125,7 @@ var overlayEscPressHandler = function (evt) {
     bigPicture.classList.add('hidden');
   }
 };
+
 var overlayOpenHandler = function () {
   uploadOverlay.classList.remove('hidden');
   effectLevel.classList.add('hidden');
@@ -162,16 +163,17 @@ var effectLevel = document.querySelector('.img-upload__effect-level');
 var levelLine = effectLevel.querySelector('.effect-level__line');
 var levelPin = levelLine.querySelector('.effect-level__pin');
 var levelDepth = levelLine.querySelector('.effect-level__depth');
-var levelValue = document.querySelector('.effect-level__value');
+var levelValue = effectLevel.querySelector('.effect-level__value');
 // Список переменных ноды изменения размеров
-var uploadSizeScale = document.querySelector('.img-upload__scale');
+var uploadSizeScale = uploadOverlay.querySelector('.img-upload__scale');
 var resizeSmaller = uploadSizeScale.querySelector('.scale__control--smaller');
 var resizeBigger = uploadSizeScale.querySelector('.scale__control--bigger');
 var sizeValue = uploadSizeScale.querySelector('.scale__control--value');
 
-var bigPictureClose = document.querySelector('.big-picture__cancel');
+var bigPictureClose = effectLevel.querySelector('.big-picture__cancel');
 
-document.querySelector('.img-upload__scale').style = 'z-index: 100';
+uploadSizeScale.style = 'z-index: 1';
+levelPin.style = 'z-index: 1';
 
 
 // Список элементов-фильтров по ID
@@ -218,7 +220,7 @@ var refreshEffectDepth = function () {
   }
 };
 
-var filterChangeHandler = function (scaleIsHidden, filterClassNameAdd) {
+var filterChangeHandler = function (scaleIsHidden, effectClassNameAdd) {
   uploadPreview.removeAttribute('class');
   // Если шкала спрятана ( === выбран вариант без фильтра) - обнуляет фильтры превью и значение фильтра в форме
   if (scaleIsHidden) {
@@ -228,9 +230,14 @@ var filterChangeHandler = function (scaleIsHidden, filterClassNameAdd) {
   } else {
     effectLevel.classList.remove('hidden');
   }
-  if (filterClassNameAdd) {
-    uploadPreview.className = filterClassNameAdd;
+  if (effectClassNameAdd) {
+    uploadPreview.className = effectClassNameAdd;
   }
+
+  // При переключении фильтров - увеличивает значение фильтра до 100% согласно ТЗ
+  levelPin.style.left = levelLine.offsetWidth + 'px';
+  levelDepth.style.width = '100%';
+
   refreshEffectDepth();
 };
 
@@ -257,8 +264,37 @@ effectsList.addEventListener('click', function (evt) {
   }
 });
 
-// Вешает обработчик отпускания клика на пин фильтра
-levelPin.addEventListener('mouseup', refreshEffectDepth);
+// Вешает обработчик обновления фильтра
+levelPin.addEventListener('mousedown', function (evt) {
+  evt.preventDefault();
+  var xStartCoords = evt.clientX;
+  var onMouseMove = function (moveEvt) {
+    var shift = xStartCoords - moveEvt.clientX;
+    xStartCoords = moveEvt.clientX;
+    moveEvt.preventDefault();
+    levelPin.style.left = (levelPin.offsetLeft - shift) + 'px';
+    levelDepth.style.width = (levelPin.offsetLeft / levelLine.offsetWidth * 100) + '%';
+    // Задаем пину и полосе точки экстремума
+    if (levelPin.offsetLeft <= 0) {
+      levelPin.style.left = '0px';
+      levelDepth.style.width = '0%';
+    }
+    if (levelPin.offsetLeft >= levelLine.offsetWidth) {
+      levelPin.style.left = levelLine.offsetWidth + 'px';
+      levelDepth.style.width = '100%';
+    }
+    refreshEffectDepth();
+  };
+
+  // При отпускании мыши сбрасываем все обработчики фильтров
+  var onMouseUp = function (upEvt) {
+    upEvt.preventDefault();
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  };
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+});
 
 // Меняет размер изображения, записывает данные в инпут
 var changeImgSize = function (scaleDown, scaleUp) {
@@ -316,7 +352,7 @@ var pictureClickHandler = function (evt) {
 picturesList.addEventListener('click', pictureClickHandler);
 
 
-var validateFormHandler = function () {
+textHashtags.addEventListener('blur', function () {
   var hashtagArray = textHashtags.value.split(' ');
   var duplicatesCounter = 0;
   textHashtags.setCustomValidity('');
@@ -325,13 +361,14 @@ var validateFormHandler = function () {
     if (hashtagArray[i].split('#').length - 1 > 1) {
       textHashtags.setCustomValidity('Хеш-теги должны разделяться пробелами');
     }
-    // Если елемент заканчивается на '#', точку или запятую  - убираем
-    while (hashtagArray[i].slice(-1) === '#' || hashtagArray[i].slice(-1) === ',' || hashtagArray[i].slice(-1) === '.' || hashtagArray[i].slice(-1) === '/') {
-      hashtagArray[i] = hashtagArray[i].slice(0, -1);
+
+    if (hashtagArray[i].slice(-1) === '#' || hashtagArray[i].slice(-1) === ',' || hashtagArray[i].slice(-1) === '.' || hashtagArray[i].slice(-1) === '/') {
+      textHashtags.setCustomValidity('Хеш-тег не может оканчиваться на #, слэш, точку или запятую');
     }
-    // Если елемент не начинается с '#'  - ставим '#'
-    if (hashtagArray[i].slice(0, 1) !== '#') {
-      hashtagArray[i] = '#' + hashtagArray[i];
+
+    // Не начинается с '#' ?
+    if (hashtagArray[i] !== '' && hashtagArray[i].slice(0, 1) !== '#') {
+      textHashtags.setCustomValidity('Хеш-тег должен начинаться со знака #');
     }
 
     if (hashtagArray[i].length > 20) {
@@ -347,16 +384,19 @@ var validateFormHandler = function () {
         textHashtags.setCustomValidity('Хеш-теги не должны повторяться');
       }
     }
-    // Чистим массив елементов от мусора и лишних пробелов
-    while (hashtagArray[i] === '' || hashtagArray[i] === '#' || hashtagArray[i] === ' ') {
+    // Чистим массив елементов от пустот
+    while (hashtagArray[i] === '' || hashtagArray[i] === ' ') {
       hashtagArray.splice(i, 1);
     }
+
+    if (hashtagArray[i] === '#') {
+      textHashtags.setCustomValidity('Хеш-тег не может состоять из одного символа #');
+    }
   }
+
   if (hashtagArray.length > 5) {
     textHashtags.setCustomValidity('Хеш-тегов не может быть более 5');
   }
 
   textHashtags.value = hashtagArray.join(' ');
-};
-
-textHashtags.addEventListener('blur', validateFormHandler);
+});
