@@ -50,4 +50,6 @@
     }
   });
 
+  window.uploadPhoto.uploadOverlay = uploadOverlay;
+
 })();
