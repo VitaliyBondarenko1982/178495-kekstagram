@@ -2,7 +2,7 @@
 
 (function () {
   var bigPicture = document.querySelector('.big-picture');
-  var bigPictureClose = window.effects.effectLevel.querySelector('.big-picture__cancel');
+  var bigPictureClose = document.querySelector('.big-picture__cancel');
   var picturesList = document.querySelector('.pictures');
 
   var showBigPictureWithData = function (arrElem) {

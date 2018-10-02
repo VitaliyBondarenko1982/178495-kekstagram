@@ -2,8 +2,10 @@
 
 (function () {
   var textHashtags = document.querySelector('.text__hashtags');
+  var formSubmitBtn = document.querySelector('#upload-submit');
+  var uploadForm = document.querySelector('.img-upload__form');
 
-  textHashtags.addEventListener('blur', function () {
+  formSubmitBtn.addEventListener('click', function () {
     var hashtagArray = textHashtags.value.split(' ');
     var duplicatesCounter = 0;
     textHashtags.setCustomValidity('');
@@ -52,15 +54,15 @@
     textHashtags.value = hashtagArray.join(' ');
   });
 
-  var form = document.querySelector('.img-upload__form');
+  // var form = document.querySelector('.img-upload__form');
 
   // Отменяет действие формы по умолчанию и отправляет форму посредством XHR на сервер
-  form.addEventListener('submit', function (evt) {
+  uploadForm.addEventListener('submit', function (evt) {
     evt.preventDefault();
 
-    window.backend.postRequest(new FormData(form), function () {
+    window.backend.postRequest(new FormData(uploadForm), function () {
       window.uploadPhoto.uploadOverlay.classList.add('hidden');
-      form.reset();
+      uploadForm.reset();
     }, displayXhrStatus);
   });
 
@@ -71,19 +73,19 @@
 
     var errorNode = document.createElement('div');
     errorNode.style.position = 'fixed';
-    errorNode.style.top = '5px';
+    errorNode.style.top = '60px';
     errorNode.style.width = '100%';
     errorNode.style.padding = '20px';
-    // Полупрозрачный красный
-    errorNode.style.backgroundColor = 'rgba(225, 0, 0, 0.55)';
+
+    errorNode.style.backgroundColor = 'rgba(225, 0, 0, 0.55)'; // Полупрозрачный красный
     errorNode.style.outline = '2px solid rgba(255, 0, 0, 0.7)';
     errorNode.style.textAlign = 'center';
     errorNode.style.zIndex = '100';
     errorNode.textContent = 'Эррор! ' + message;
     errorNode.id = 'serverStatus';
     if (message === dataGetSuccess || message === formPostSuccess) {
-      // Полупрозрачный зеленый
-      errorNode.style.backgroundColor = 'rgba(0, 128, 0, 0.55)';
+
+      errorNode.style.backgroundColor = 'rgba(0, 128, 0, 0.55)'; // Полупрозрачный зеленый
       errorNode.style.outline = '2px solid rgba(0, 128, 0, 0.7)';
       errorNode.textContent = message;
     }
@@ -108,6 +110,7 @@
   };
 
   window.form = {
+    uploadForm: uploadForm,
     textHashtags: textHashtags,
     displayXhrStatus: displayXhrStatus
   };
