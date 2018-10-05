@@ -3,20 +3,19 @@
 (function () {
   var effectsList = document.querySelector('.effects__list');
   var uploadPreview = document.querySelector('.img-upload__preview');
-  // Список переменных шкалы фильтра
+  var uploadPreviewImg = uploadPreview.querySelector('img');
+
   var effectLevel = document.querySelector('.img-upload__effect-level');
   var levelLine = effectLevel.querySelector('.effect-level__line');
   var levelPin = levelLine.querySelector('.effect-level__pin');
   var levelDepth = levelLine.querySelector('.effect-level__depth');
   var levelValue = effectLevel.querySelector('.effect-level__value');
 
-  // Список переменных ноды изменения размеров
   var uploadSizeScale = document.querySelector('.img-upload__scale');
   var resizeSmaller = uploadSizeScale.querySelector('.scale__control--smaller');
   var resizeBigger = uploadSizeScale.querySelector('.scale__control--bigger');
   var sizeValue = uploadSizeScale.querySelector('.scale__control--value');
 
-  // Список элементов-фильтров по ID
   var effectChrome = effectsList.querySelector('#effect-chrome');
   var effectSepia = effectsList.querySelector('#effect-sepia');
   var effectMarvin = effectsList.querySelector('#effect-marvin');
@@ -32,49 +31,45 @@
     heat: 'effects__preview--heat'
   };
 
-  // Получает соотношение шкалы уровня к общей длине шкалы и подставляет это значение в подходящем формате в атрибут style
   var refreshEffectDepth = function () {
     var getEffectDepth = function () {
       return (levelDepth.offsetWidth / levelLine.offsetWidth).toFixed(2);
     };
     var depth = getEffectDepth();
     if (effectChrome.checked) {
-      uploadPreview.style = 'filter: grayscale(' + depth + ');';
+      uploadPreviewImg.style = 'filter: grayscale(' + depth + ');';
       levelValue.setAttribute('value', depth);
     }
     if (effectSepia.checked) {
-      uploadPreview.style = 'filter: sepia(' + depth + ');';
+      uploadPreviewImg.style = 'filter: sepia(' + depth + ');';
       levelValue.setAttribute('value', depth);
     }
     if (effectMarvin.checked) {
-      uploadPreview.style = 'filter: invert(' + depth * 100 + '%);';
+      uploadPreviewImg.style = 'filter: invert(' + depth * 100 + '%);';
       levelValue.setAttribute('value', depth * 100 + '%');
     }
     if (effectPhobos.checked) {
-      uploadPreview.style = 'filter: blur(' + depth * 3 + 'px);';
+      uploadPreviewImg.style = 'filter: blur(' + depth * 3 + 'px);';
       levelValue.setAttribute('value', (depth * 3).toFixed(2) + 'px');
     }
     if (effectHeat.checked) {
-      uploadPreview.style = 'filter: brightness(' + depth * 3 + ');';
+      uploadPreviewImg.style = 'filter: brightness(' + depth * 3 + ');';
       levelValue.setAttribute('value', (depth * 3).toFixed(2));
     }
   };
 
   var filterChangeHandler = function (scaleIsHidden, effectClassNameAdd) {
-    uploadPreview.removeAttribute('class');
-    // Если шкала спрятана ( === выбран вариант без фильтра) - обнуляет фильтры превью и значение фильтра в форме
+    uploadPreviewImg.removeAttribute('class');
     if (scaleIsHidden) {
       effectLevel.classList.add('hidden');
-      uploadPreview.removeAttribute('style');
       levelValue.removeAttribute('value');
     } else {
       effectLevel.classList.remove('hidden');
     }
     if (effectClassNameAdd) {
-      uploadPreview.className = effectClassNameAdd;
+      uploadPreviewImg.className = effectClassNameAdd;
     }
 
-    // При переключении фильтров - увеличивает значение фильтра до 100% согласно ТЗ
     levelPin.style.left = levelLine.offsetWidth + 'px';
     levelDepth.style.width = '100%';
 
@@ -103,7 +98,7 @@
         break;
     }
   });
-  // Вешает обработчик обновления фильтра
+
   levelPin.addEventListener('mousedown', function (evt) {
     evt.preventDefault();
     var xStartCoords = evt.clientX;
@@ -113,7 +108,7 @@
       moveEvt.preventDefault();
       levelPin.style.left = (levelPin.offsetLeft - shift) + 'px';
       levelDepth.style.width = (levelPin.offsetLeft / levelLine.offsetWidth * 100) + '%';
-      // Задаем пину и полосе точки экстремума
+
       if (levelPin.offsetLeft <= 0) {
         levelPin.style.left = '0px';
         levelDepth.style.width = '0%';
@@ -125,7 +120,6 @@
       refreshEffectDepth();
     };
 
-    // При отпускании мыши сбрасываем все обработчики фильтров
     var onMouseUp = function (upEvt) {
       upEvt.preventDefault();
       document.removeEventListener('mousemove', onMouseMove);
@@ -175,6 +169,7 @@
     effectNone: effectNone,
     effectLevel: effectLevel,
     uploadPreview: uploadPreview,
+    uploadPreviewImg: uploadPreviewImg,
     levelValue: levelValue,
     sizeValue: sizeValue
   };

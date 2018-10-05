@@ -2,15 +2,13 @@
 
 (function () {
 
+  var DEBOUNCE_INTERVAL = 500;
   var filterContainer = document.querySelector('.img-filters ');
-  filterContainer.classList.remove('img-filters--inactive');
   var filterButtons = filterContainer.querySelectorAll('.img-filters__button');
   var picturesBlock = document.querySelector('.pictures');
-  var DEBOUNCE_INTERVAL = 500;
   var xhrPhotos;
   var lastTimeout;
 
-  // Удаляет все текущие миниатюры перед отрисовкой отсортированных миниатюр
   var removeOldPhotos = function () {
     var oldPhotos = picturesBlock.querySelectorAll('.picture');
     if (oldPhotos !== null) {
@@ -20,7 +18,6 @@
     }
   };
 
-  // Подставляет данные из массива объектов в фрагменты и встраивает их на страницу
   var renderPhotoCards = function (arr) {
     removeOldPhotos();
     var photoTemplateNode = document.querySelector('#picture').content.querySelector('.picture');
@@ -36,13 +33,11 @@
     picturesBlock.appendChild(fragment);
   };
 
-  // Фильтрует миниатюры по клику на кнопку фильтра
   var sortButtonClickHandler = function (evt) {
     var activeElement = evt.target;
     filterContainer.querySelector('.img-filters__button--active').classList.remove('img-filters__button--active');
     activeElement.classList.add('img-filters__button--active');
 
-    // Создаем копию массива для сортировки
     var photosCopy = xhrPhotos.slice();
     switch (activeElement.id) {
       case 'filter-popular':
@@ -71,6 +66,7 @@
     xhrPhotos = data;
     window.gallery.allPhotosArr = xhrPhotos;
 
+    window.backend.displayXhrStatus('Данные загружены успешно');
     renderPhotoCards(xhrPhotos);
     filterContainer.classList.remove('img-filters--inactive');
     [].forEach.call(filterButtons, function (button) {
@@ -78,7 +74,7 @@
     });
   };
 
-  window.backend.getRequest(onDataGetSuccess, window.form.displayXhrStatus);
+  window.backend.loadData(onDataGetSuccess, window.form.displayXhrStatus);
   window.gallery = {};
 
 })();
