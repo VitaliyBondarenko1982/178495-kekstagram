@@ -1,6 +1,7 @@
 'use strict';
 
 (function () {
+  var FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
   var keyCode = {
     ESC: 27,
     ENTER: 13
@@ -12,6 +13,17 @@
   var textDescription = document.querySelector('.text__description');
 
   window.uploadPhoto = {
+    resetAllFormFilters: function () {
+
+      window.effects.uploadPreview.style = '';
+      window.effects.uploadPreviewImg.style = '';
+      window.effects.uploadPreview.removeAttribute('class');
+      window.effects.levelValue.removeAttribute('value');
+      window.effects.sizeValue.value = '100%';
+      window.effects.effectNone.checked = true;
+      window.effects.uploadPreviewImg.src = 'img/upload-default-image.jpg'; // Возвращает превью в значение по умолчанию
+    },
+
     overlayEscPressHandler: function (evt) {
       if (evt.keyCode === keyCode.ESC && document.activeElement !== window.form.textHashtags && document.activeElement !== textDescription) {
         window.uploadPhoto.overlayCloseHandler();
@@ -23,20 +35,14 @@
       uploadOverlay.classList.remove('hidden');
       window.effects.effectLevel.classList.add('hidden');
       document.addEventListener('keydown', window.uploadPhoto.overlayEscPressHandler);
+      window.uploadPhoto.resetAllFormFilters();
     },
 
     overlayCloseHandler: function () {
-      // При закрытии модального окна возвращает все поля формы и значения фильтра в исходное положение
+      document.body.removeAttribute('class');
       uploadOverlay.classList.add('hidden');
-
-      // Обнуляет все изменения при закрытии модального окна
       uploadFile.value = '';
-      window.effects.uploadPreview.removeAttribute('style');
-      window.effects.uploadPreview.removeAttribute('class');
-      window.effects.levelValue.removeAttribute('value');
-      window.effects.uploadPreview.querySelector('img').removeAttribute('style');
-      window.effects.sizeValue.value = 100 + '%';
-      window.effects.effectNone.selected = true;
+      window.uploadPhoto.resetAllFormFilters();
       document.removeEventListener('keydown', window.uploadPhoto.overlayEscPressHandler);
     }
   };
@@ -47,6 +53,21 @@
   uploadOverlayClose.addEventListener('keydown', function (evt) {
     if (evt.keyCode === keyCode.ENTER) {
       window.uploadPhoto.overlayCloseHandler();
+    }
+  });
+
+  uploadFile.addEventListener('change', function () {
+    var file = uploadFile.files[0];
+    var fileName = file.name.toLowerCase();
+    var matches = FILE_TYPES.some(function (it) {
+      return fileName.endsWith(it);
+    });
+    if (matches) {
+      var reader = new FileReader();
+      reader.addEventListener('load', function () {
+        window.effects.uploadPreview.src = reader.result;
+      });
+      reader.readAsDataURL(file);
     }
   });
 

@@ -26,14 +26,14 @@
       commentElem.appendChild(textElem);
       fragment.appendChild(commentElem);
     }
-    // Удаляет из разметки уже существующие комментарии
+
     while (socialCommentsList.firstChild) {
       socialCommentsList.removeChild(socialCommentsList.firstChild);
     }
-    // И добавляет новые
+
     socialCommentsList.appendChild(fragment);
     socialCommentsList.firstChild.style.display = 'none';
-    // Скрывает ноды с количеством комментариев и спиннером
+
     document.querySelector('.social__comment-count').classList.add('visually-hidden');
     document.querySelector('.social__comments-loader').classList.add('visually-hidden');
   };
@@ -53,7 +53,6 @@
     }
   };
 
-  // Открывает большую картинку по клику на миниатюру, вешает обработчик закрытия
   picturesList.addEventListener('click', pictureClickHandler);
 
   window.preview = {

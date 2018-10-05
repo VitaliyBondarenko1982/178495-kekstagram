@@ -1,12 +1,14 @@
 'use strict';
 
 (function () {
-  // Если при отправке данных произошла ошибка запроса = показать блок. ТЗ 3.4
+  // Если при отправке данных произошла ошибка запроса = показать блок ТЗ 3.4
   var onPostRequestError = function () {
     var errorNode = document.querySelector('.error');
-    var tryAgainLink = errorNode.firstElementChild.firstElementChild;
-    var uploadAgainLink = errorNode.firstElementChild.lastElementChild;
+    var errorButtons = document.querySelector('.error__buttons');
+    var tryAgainLink = errorButtons.firstElementChild;
+    var uploadAgainLink = errorButtons.lastElementChild;
     var imgUploadInput = document.querySelector('.img-upload__input');
+
     window.uploadPhoto.uploadOverlay.classList.add('hidden');
     window.uploadPhoto.resetAllFormFilters();
     errorNode.classList.remove('hidden');
@@ -23,82 +25,90 @@
 
   window.backend = {
     // Функция получения данных
-    getRequest: function (onLoad, onError) {
+    loadData: function (onLoad, onError) {
       var URL = 'https://js.dump.academy/kekstagram/data';
       var xhr = new XMLHttpRequest();
       xhr.responseType = 'json';
+
       xhr.addEventListener('load', function () {
-        var message;
-        switch (xhr.status) {
-          case 200:
-            message = 'Данные загружены успешно';
-            onLoad(xhr.response);
-            break;
-          case 400:
-            message = 'Неверный запрос';
-            break;
-          case 401:
-            message = 'Пользователь не авторизован';
-            break;
-          case 404:
-            message = 'Страница не найдена';
-            break;
-          default:
-            onError(xhr.status + ': ' + xhr.statusText);
+        if (xhr.status === 200) {
+          onLoad(xhr.response);
+        } else {
+          onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
         }
-        onError(message);
       });
+
       xhr.addEventListener('error', function () {
-        onError('Произошла ошибка соединения, попробуйте обновить страницу');
+        onError('Произошла ошибка соединения');
       });
+
       xhr.addEventListener('timeout', function () {
-        onError('Время ожидания соединения истекло');
+        onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
       });
+
       xhr.timeout = 10000; // 10сек
       xhr.open('GET', URL);
       xhr.send();
     },
-    // Функция отправки данных
-    postRequest: function (data, onLoad, onError) {
+
+    uploadData: function (data, onLoad, onError) {
       var URL = 'https://js.dump.academy/kekstagram';
       var xhr = new XMLHttpRequest();
       xhr.responseType = 'json';
       xhr.addEventListener('load', function () {
-        var message;
-        switch (xhr.status) {
-          case 200:
-            message = 'Форма отправлена успешно';
-            onLoad();
-            break;
-          case 400:
-            message = 'Неверный запрос';
-            onPostRequestError();
-            break;
-          case 401:
-            message = 'Пользователь не авторизован';
-            onPostRequestError();
-            break;
-          case 404:
-            message = 'Страница не найдена';
-            onPostRequestError();
-            break;
-          default:
-            message = 'Неизвестный статус: ' + xhr.status + ' ' + xhr.statusText;
-            onPostRequestError();
+        if (xhr.status === 200) {
+          onLoad(xhr.response);
+        } else {
+          onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
+          onPostRequestError();
         }
-        onError(message);
       });
+
       xhr.addEventListener('error', function () {
-        onError('Запрос не выполнен. Попробуйте обновить страницу и повторить запрос');
+        onError('Произошла ошибка соединения');
         onPostRequestError();
       });
+
       xhr.addEventListener('timeout', function () {
-        onError('Время ожидания соединения исктекло.');
+        onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
         onPostRequestError();
       });
-      xhr.timeout = 10000; // 10сек
+
+      xhr.timeout = 5000; // 10сек
       xhr.open('POST', URL);
       xhr.send(data);
     },
+  };
+
+  var errorElement = document.createElement('div');
+  var hideErrorMessage = function () {
+    setTimeout(function () {
+      errorElement.classList.add('hidden');
+    }, 5000);
+  };
+
+  window.backend.displayXhrStatus = function (message) {
+    var dataGetSuccess = 'Данные загружены успешно';
+    var formPostSuccess = 'Форма отправлена успешно';
+
+    errorElement.style.position = 'fixed';
+    errorElement.style.top = '60px';
+    errorElement.style.width = '100%';
+    errorElement.style.padding = '20px';
+
+    errorElement.style.backgroundColor = 'rgba(225, 0, 0, 0.55)'; // Полупрозрачный красный
+    errorElement.style.outline = '2px solid rgba(255, 0, 0, 0.7)';
+    errorElement.style.textAlign = 'center';
+    errorElement.style.zIndex = '100';
+    errorElement.textContent = 'ERROR! ' + message;
+    errorElement.id = 'serverStatus';
+    if (message === dataGetSuccess || message === formPostSuccess) {
+
+      errorElement.style.backgroundColor = 'rgba(0, 128, 0, 0.55)'; // Полупрозрачный зеленый
+      errorElement.style.outline = '2px solid rgba(0, 128, 0, 0.7)';
+      errorElement.textContent = message;
+    }
+    document.body.insertAdjacentElement('afterbegin', errorElement);
+    hideErrorMessage();
   };
 })();

@@ -7,7 +7,7 @@
       return Math.round(Math.random() * (max - min) + min);
     },
 
-    // Возвращает перемешаный массив Тасование Фишера — Йетса
+    // Возвращает перемешаный массив
     getShuffledArray: function (arr) {
       var m = arr.length;
       while (m) {
