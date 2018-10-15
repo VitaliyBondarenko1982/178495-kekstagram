@@ -153,7 +153,7 @@
           </div>
 
           <!-- Комментарии к изображению -->
-          <div class="social__comment-count">5 из <span class="comments-count">125</span> комментариев</div>
+          <div class="social__comment-count"><span class="display-comments-count">5</span> из <span class="comments-count">125</span> комментариев</div>
           <ul class="social__comments">
             <li class="social__comment">
               <img class="social__picture" src="img/avatar-4.svg" alt="Аватар комментатора фотографии" width="35" height="35">
@@ -236,12 +236,21 @@
     <div class="img-upload__message  img-upload__message--loading">Загружаем...</div>
   </template>
 
+  <!-- Отображение комментария под фотографией-->
+  <template id="socialComment">
+    <li class="social__comment">
+      <img class="social__picture" src="img/avatar-4.svg" alt="Аватар комментатора фотографии" width="35" height="35">
+      <p class="social__text">Текст комментария</p>
+    </li>
+  </template>
+
 <script src="js/backend.js"></script>
 <script src="js/utils.js"></script>
-<script src="js/form.js"></script>
-<script src="js/gallery.js"></script>
-<script src="js/effects.js"></script>
-<script src="js/preview.js"></script>
 <script src="js/uploadPhoto.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/form.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/gallery.js"></script>
+
 </body>
 </html>

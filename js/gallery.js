@@ -1,11 +1,10 @@
 'use strict';
 
 (function () {
-
   var DEBOUNCE_INTERVAL = 500;
   var filterContainer = document.querySelector('.img-filters ');
-  var filterButtons = filterContainer.querySelectorAll('.img-filters__button');
   var picturesBlock = document.querySelector('.pictures');
+  var filterButtons = filterContainer.querySelectorAll('.img-filters__button');
   var xhrPhotos;
   var lastTimeout;
 
@@ -23,15 +22,24 @@
     var photoTemplateNode = document.querySelector('#picture').content.querySelector('.picture');
 
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < arr.length; i++) {
+    arr.forEach(function (elem) {
       var photoElement = photoTemplateNode.cloneNode(true);
-      photoElement.querySelector('.picture__img').src = arr[i].url;
-      photoElement.querySelector('.picture__comments').textContent = arr[i].comments.length - 1;
-      photoElement.querySelector('.picture__likes').textContent = arr[i].likes;
+      photoElement.querySelector('img').src = elem.url;
+      photoElement.querySelector('.picture__comments').textContent = elem.comments.length - 1;
+      photoElement.querySelector('.picture__likes').textContent = elem.likes;
       fragment.appendChild(photoElement);
-    }
+    });
     picturesBlock.appendChild(fragment);
   };
+
+  function getRandomPictures(pictures) {
+    var randomUniqueArray = window.utils.getUniqueArray(0, pictures.length);
+    var randomPictures = [];
+    randomUniqueArray.forEach(function (it) {
+      return randomPictures.push(pictures[it]);
+    });
+    return randomPictures;
+  }
 
   var sortButtonClickHandler = function (evt) {
     var activeElement = evt.target;
@@ -45,13 +53,14 @@
           return second.likes - first.likes;
         });
         break;
+      case 'filter-new':
+        window.utils.clearGallery('.picture', picturesBlock);
+        photosCopy = getRandomPictures(photosCopy);
+        break;
       case 'filter-discussed':
         photosCopy = photosCopy.sort(function (first, second) {
           return second.comments.length - first.comments.length;
         });
-        break;
-      case 'filter-random':
-        photosCopy = window.utils.getShuffledArray(photosCopy);
         break;
     }
     if (lastTimeout) {
@@ -66,7 +75,7 @@
     xhrPhotos = data;
     window.gallery.allPhotosArr = xhrPhotos;
 
-    window.backend.displayXhrStatus('Данные загружены успешно');
+    window.displayXhrStatus('Данные загружены успешно');
     renderPhotoCards(xhrPhotos);
     filterContainer.classList.remove('img-filters--inactive');
     [].forEach.call(filterButtons, function (button) {
@@ -74,7 +83,7 @@
     });
   };
 
-  window.backend.loadData(onDataGetSuccess, window.form.displayXhrStatus);
+  window.backend.loadData(onDataGetSuccess, window.displayXhrStatus);
   window.gallery = {};
 
 })();

@@ -1,30 +1,7 @@
 'use strict';
 
 (function () {
-  // Если при отправке данных произошла ошибка запроса = показать блок ТЗ 3.4
-  var onPostRequestError = function () {
-    var errorNode = document.querySelector('.error');
-    var errorButtons = document.querySelector('.error__buttons');
-    var tryAgainLink = errorButtons.firstElementChild;
-    var uploadAgainLink = errorButtons.lastElementChild;
-    var imgUploadInput = document.querySelector('.img-upload__input');
-
-    window.uploadPhoto.uploadOverlay.classList.add('hidden');
-    window.uploadPhoto.resetAllFormFilters();
-    errorNode.classList.remove('hidden');
-    tryAgainLink.addEventListener('click', function () {
-      errorNode.classList.add('hidden');
-      window.form.uploadForm.reset();
-    });
-    uploadAgainLink.addEventListener('click', function () {
-      errorNode.classList.add('hidden');
-      window.form.uploadForm.reset();
-      imgUploadInput.click();
-    });
-  };
-
   window.backend = {
-    // Функция получения данных
     loadData: function (onLoad, onError) {
       var URL = 'https://js.dump.academy/kekstagram/data';
       var xhr = new XMLHttpRequest();
@@ -46,7 +23,7 @@
         onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
       });
 
-      xhr.timeout = 10000; // 10сек
+      xhr.timeout = 10000;
       xhr.open('GET', URL);
       xhr.send();
     },
@@ -60,21 +37,18 @@
           onLoad(xhr.response);
         } else {
           onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
-          onPostRequestError();
         }
       });
 
       xhr.addEventListener('error', function () {
         onError('Произошла ошибка соединения');
-        onPostRequestError();
       });
 
       xhr.addEventListener('timeout', function () {
         onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
-        onPostRequestError();
       });
 
-      xhr.timeout = 5000; // 10сек
+      xhr.timeout = 5000;
       xhr.open('POST', URL);
       xhr.send(data);
     },
@@ -87,7 +61,7 @@
     }, 5000);
   };
 
-  window.backend.displayXhrStatus = function (message) {
+  window.displayXhrStatus = function (message) {
     var dataGetSuccess = 'Данные загружены успешно';
     var formPostSuccess = 'Форма отправлена успешно';
 
